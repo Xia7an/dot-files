@@ -27,6 +27,7 @@
     fzf
     peco
     tig
+    serie
   ];
 
   programs.git.settings.ghq.root = "~/Gits";

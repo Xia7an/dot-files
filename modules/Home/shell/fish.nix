@@ -4,14 +4,9 @@
   programs.fish = {
     enable = true;
     shellAliases = {
-      cat  = "bat";
       grep = "rg";
-      ls   = "eza --icons always --classify always";
-      la   = "eza --icons always --classify always --all";
-      ll   = "eza --icons always --long --all --git";
-      tree = "eza --icons always --classify always --tree";
-      l    = "ls -la";
-      zj   = "zellij";
+      l = "ls -la";
+      zj = "zellij";
     };
     shellInit = ''
       # PATH additions
@@ -29,6 +24,9 @@
     '';
     shellAbbrs = {
       cduniv = "cd ~/Documents/大学/授業/3年前期/";
+      ls = "eza --icons always --classify always";
+      la = "eza --icons always --classify always --all";
+      ll = "eza --icons always --long --all --git";
     };
     functions = {
       ya = {

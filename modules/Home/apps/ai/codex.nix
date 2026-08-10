@@ -1,25 +1,25 @@
 {
-  config,
+  inputs,
   pkgs,
-  lib,
   ...
 }:
 
 let
-  codexPkg =
-    if pkgs ? codex then
-      pkgs.codex
-    else
-      pkgs.writeShellApplication {
-        name = "codex";
-        runtimeInputs = [ pkgs.nodejs ];
-        text = ''
-          exec npx -y @openai/codex "$@"
-        '';
-      };
+  codexPackage = inputs.codex-cli-nix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  # codex-cli-nix の native 版は最終的に `codex-raw` として実行される。
+  # Herdr はプロセス名だけではこれを Codex と判定できないため、Herdr が
+  # macOS のプロセス環境から読む公式の foreground-process hint を渡す。
+  codexWithHerdrHint = pkgs.writeShellApplication {
+    name = "codex";
+    text = ''
+      export HERDR_AGENT=codex
+      exec "${codexPackage}/bin/codex" "$@"
+    '';
+  };
 in
 {
   home.packages = [
-    codexPkg
+    codexWithHerdrHint
   ];
 }

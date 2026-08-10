@@ -13,8 +13,8 @@
 
   # ~/.claude 設定ディレクトリ
   # 参考: https://docs.anthropic.com/en/docs/claude-code/overview
-  home.file.".claude/settings.json".text = builtins.toJSON {
-    # 必要に応じて設定を追加
-    # 例: API キーは環境変数 ANTHROPIC_API_KEY で設定推奨
-  };
- }
+  # home.file.".claude/settings.json".text = builtins.toJSON {
+  # 必要に応じて設定を追加
+  # 例: API キーは環境変数 ANTHROPIC_API_KEY で設定推奨
+  # };
+}

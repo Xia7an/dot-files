@@ -12,6 +12,7 @@
     # claude は native installer 版 (~/.local/bin/claude) をそのまま使う
     # (nvim の avante.nvim もこれを ACP 経由で叩く)。
     ../../../modules/Home/apps/ai/codex.nix
+    ../../../modules/Home/apps/ai/opencode.nix
 
     # ─── マルチメディア / PDF ───
     ../../../modules/Home/apps/media/multimedia.nix
