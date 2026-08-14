@@ -39,6 +39,19 @@ let
       done
     '';
   });
+
+  # markdown-table-wrap.nvim はまだ nixpkgs に収録されていないため、upstream の
+  # commit を固定して取り込む。nixpkgs に追加されたら vimPlugins のものへ置換できる。
+  markdown-table-wrap-nvim = pkgs.unstable.vimUtils.buildVimPlugin {
+    pname = "markdown-table-wrap.nvim";
+    version = "unstable-2026-08-14";
+    src = pkgs.fetchFromGitHub {
+      owner = "ice345";
+      repo = "markdown-table-wrap.nvim";
+      rev = "f2c31f3c22f79ef4fb9d3d9f6356310c8c13fe52";
+      hash = "sha256-09e5UwdldlSRv8i0LtjIbovflRaolQXiGDx+pzJVQm0=";
+    };
+  };
 in
 
 {
@@ -127,6 +140,7 @@ in
           img-clip-nvim
           lazydev-nvim
           lualine-nvim
+          { name = "markdown-table-wrap.nvim"; path = markdown-table-wrap-nvim; }
           noice-nvim
           nui-nvim
           # `with pkgs.unstable.vimPlugins` に上書きされないよう明示的に let 側の
@@ -226,6 +240,27 @@ in
               "saghen/blink.cmp",
               build = false,
               opts = { fuzzy = { prebuilt_binaries = { download = false } } },
+            },
+
+            -- カーソル下の Markdown 表を、元のソースを変更せず罫線付きで表示する。
+            -- 表にいる間だけ nowrap にすることで、長い表の崩れを防ぐ。
+            {
+              "ice345/markdown-table-wrap.nvim",
+              ft = { "markdown", "quarto", "rmd" },
+              opts = {
+                preview_mode = "inline",
+                inline_mode = "replace",
+                auto_preview = true,
+                render_all = false,
+                clear_on_cursor_leave = true,
+                clear_on_insert = true,
+                clear_on_visual = true,
+                inline_disable_wrap = true,
+                inline_wrap_scope = "cursor",
+                fit_to_window = false,
+                table_border = "rounded",
+                row_separator = true,
+              },
             },
 
             -- 自作 spec (xdg.configFile."nvim/lua" 経由)
