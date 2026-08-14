@@ -9,7 +9,7 @@ let
 
   # codex-cli-nix の native 版は最終的に `codex-raw` として実行される。
   # Herdr はプロセス名だけではこれを Codex と判定できないため、Herdr が
-  # macOS のプロセス環境から読む公式の foreground-process hint を渡す。
+  # macOS/Linux のプロセス環境から読む公式の foreground-process hint を渡す。
   codexWithHerdrHint = pkgs.writeShellApplication {
     name = "codex";
     text = ''
