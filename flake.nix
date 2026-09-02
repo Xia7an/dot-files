@@ -45,9 +45,12 @@
       url = "github:nix-community/NixOS-WSL/main";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    codex-cli-nix = {
-      url = "github:sadjow/codex-cli-nix";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    # AI コーディングエージェント一式 (claude-code / codex / opencode ...) の上流。
+    # 上流は自前の nixpkgs-unstable ピンでのみビルド・テストされており、
+    # 本リポジトリの nixpkgs は stable (nixos-25.11) なので follows させない。
+    # (follows させると壊れるうえ、上流のバイナリキャッシュも当たらなくなる)
+    llm-agents = {
+      url = "github:numtide/llm-agents.nix";
     };
   };
 

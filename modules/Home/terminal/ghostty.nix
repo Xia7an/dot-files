@@ -12,6 +12,7 @@
       cursor-style = "bar";
       cursor-style-blink = true;
       scrollback-limit = 10000;
+      shell-integration-features = "ssh-env,ssh-terminfo";
     };
   };
 }

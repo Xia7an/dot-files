@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   openUltraCode = pkgs.fetchzip {
@@ -11,7 +16,7 @@ in
 {
   programs.opencode = {
     enable = true;
-    package = pkgs.unstable.opencode;
+    package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
 
     settings = {
       plugin = [ "${openUltraCode}/.opencode/plugins/open-ultracode.ts" ];

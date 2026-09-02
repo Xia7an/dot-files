@@ -1,7 +1,7 @@
-{ pkgs, ... }:
+{ inputs, pkgs, ... }:
 
 {
-  home.packages = [ pkgs.unstable.claude-code ];
+  home.packages = [ inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code ];
 
   # Claude Code の環境変数設定
   # DISABLE_AUTOUPDATER: Nix が更新を管理するため無効化（自動アップデートを抑制）
