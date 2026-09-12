@@ -5,6 +5,8 @@
   imports = [
     # ─── macOS 自動化 / ウィンドウ管理 ───
     ../../../modules/Home/darwin/aquaskk.nix
+    ../../../modules/Home/darwin/aerospace.nix
+    ../../../modules/Home/darwin/hammerspoon.nix
     ../../../modules/Home/darwin/ice.nix
 
     # ─── AI ───
@@ -22,6 +24,7 @@
     ../../../modules/Home/apps/vdesktop/immersed.nix
     ../../../modules/Home/apps/creative/blender.nix
     ../../../modules/Home/apps/creative/musescore.nix
+
     # discord / slack は Homebrew cask で管理する (modules/darwin/homebrew/applications.nix)
     ../../../modules/Home/apps/browser/chrome.nix
     ../../../modules/Home/apps/document/obsidian.nix

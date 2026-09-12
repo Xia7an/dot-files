@@ -1,11 +1,13 @@
 {
   homebrew.casks = [
+    "aerospace"
     "audacity"
     "chatgpt"
     "claude"
     "discord"
     "figma"
     "gdlauncher"
+    "hammerspoon"
     "microsoft-excel"
     "microsoft-onenote"
     "microsoft-powerpoint"

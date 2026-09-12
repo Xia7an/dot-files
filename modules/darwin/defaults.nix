@@ -27,8 +27,11 @@
       ApplePressAndHoldEnabled = false;
       AppleSpacesSwitchOnActivate = false;
       AppleWindowTabbingMode = "always";
+      # 実機の HID 値では 1 単位 ≈ 1/60 秒。
+      # 待ち時間を 15 (約250ms) から 25 (約417ms) に延ばして
+      # 誤リピートを抑える。二重入力の原因確定を意味するものではない。
       KeyRepeat = 2;
-      InitialKeyRepeat = 15;
+      InitialKeyRepeat = 25;
       NSAutomaticCapitalizationEnabled = false;
       NSAutomaticDashSubstitutionEnabled = false;
       NSAutomaticPeriodSubstitutionEnabled = false;
@@ -63,7 +66,7 @@
       TrackpadThreeFingerDrag = false;
       TrackpadThreeFingerHorizSwipeGesture = 2;
       TrackpadThreeFingerTapGesture = 0;
-      TrackpadThreeFingerVertSwipeGesture = 2;
+      TrackpadThreeFingerVertSwipeGesture = 0;
       TrackpadTwoFingerDoubleTapGesture = true;
       TrackpadTwoFingerFromRightEdgeSwipeGesture = 3;
     };
@@ -77,7 +80,42 @@
       "com.apple.HIToolbox" = {
         AppleCurrentKeyboardLayoutInputSourceID = "com.apple.keylayout.ABC";
         AppleDictationAutoEnable = true;
+        # 先頭の "Keyboard Layout" エントリは必須。これが無いと有効な入力
+        # ソースから物理キーボードのレイアウトが消え、AppleCurrentKeyboard-
+        # LayoutInputSourceID が指す ABC と実際の状態が食い違ったまま
+        # org.nixos.activate-system が起動毎に上書きしてしまう。
+        # KeyboardLayout ID 252 = ABC。
         AppleEnabledInputSources = [
+          {
+            InputSourceKind = "Keyboard Layout";
+            "KeyboardLayout ID" = 252;
+            "KeyboardLayout Name" = "ABC";
+          }
+          # Google 日本語入力は実機の選択中ソースにも存在する。
+          # 有効リストから除外して起動時に上書きしないよう、英数も含める。
+          {
+            "Bundle ID" = "com.google.inputmethod.Japanese";
+            "Input Mode" = "com.apple.inputmethod.Roman";
+            InputSourceKind = "Input Mode";
+          }
+          {
+            "Bundle ID" = "com.google.inputmethod.Japanese";
+            "Input Mode" = "com.apple.inputmethod.Japanese";
+            InputSourceKind = "Input Mode";
+          }
+          {
+            "Bundle ID" = "com.google.inputmethod.Japanese";
+            InputSourceKind = "Keyboard Input Method";
+          }
+          {
+            "Bundle ID" = "dev.ensan.inputmethod.azooKeyMac";
+            "Input Mode" = "com.apple.inputmethod.Japanese";
+            InputSourceKind = "Input Mode";
+          }
+          {
+            "Bundle ID" = "dev.ensan.inputmethod.azooKeyMac";
+            InputSourceKind = "Keyboard Input Method";
+          }
           {
             "Bundle ID" = "com.apple.inputmethod.Kotoeri.RomajiTyping";
             "Input Mode" = "com.apple.inputmethod.Japanese";
@@ -89,7 +127,7 @@
           }
           {
             "Bundle ID" = "com.apple.CharacterPaletteIM";
-            InputSourceKind = "Palette";
+            InputSourceKind = "Non Keyboard Input Method";
           }
         ];
       };

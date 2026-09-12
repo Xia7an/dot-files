@@ -3,6 +3,7 @@
     ../../modules/darwin/common.nix
     ../../modules/darwin/defaults.nix
     ../../modules/darwin/homebrew.nix
+    ../../modules/darwin/launch-agents.nix
   ];
 
   networking.hostName = "Lachesis";

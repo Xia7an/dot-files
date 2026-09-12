@@ -5,7 +5,9 @@
     hs.autoLaunch(true)
     hs.automaticallyCheckForUpdates(true)
 
-    -- ウィンドウ管理 (yabai 使用時はコメントアウト)
-    -- hs.loadSpoon("WindowManagement")
+    aerospaceWindowGrid = require("aerospace-window-grid").start()
   '';
+
+  home.file.".hammerspoon/aerospace-window-grid.lua".source =
+    ../../../config/hammerspoon/aerospace-window-grid.lua;
 }
