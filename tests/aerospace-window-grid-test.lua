@@ -2,6 +2,7 @@
 local tasks, timers, canvases, alerts = {}, {}, {}, {}
 local eventTap, decoded, modifiers, secure, failStart
 local focusedID = 3
+local screenFrame = { x = -1600, y = 0, w = 1600, h = 1000 }
 local key = { tab = 48, h = 4, j = 38, k = 40, l = 37, escape = 53,
     left = 123, right = 124, down = 125, up = 126, a = 0 }
 hs = {
@@ -15,7 +16,7 @@ hs = {
         return decoded
     end },
     screen = { mainScreen = function() return { frame = function()
-        return { x = -1600, y = 0, w = 1600, h = 1000 }
+        return screenFrame
     end } end },
     window = {
         focusedWindow = function()
@@ -92,12 +93,29 @@ end
 local function query()
     assert(down("tab"))
     local t = tasks[#tasks]
-    assert(t.arguments[1] == "list-windows" and t.arguments[3] == "focused")
+    assert(t.arguments[1] == "list-windows" and t.arguments[2] == "--all")
     return t
 end
 local function focusIs(id)
     local t = tasks[#tasks]
     assert(t.arguments[1] == "focus" and t.arguments[3] == tostring(id))
+end
+
+local function visibleCards()
+    local result = {}
+    for _, element in ipairs(canvases[#canvases].elements) do
+        if element.id and element.id:match("^window%-") then
+            result[tonumber(element.id:match("%d+$"))] = element
+        end
+    end
+    return result
+end
+
+local function selectedID()
+    for id, element in pairs(visibleCards()) do
+        if element.strokeWidth == 3 then return id end
+    end
+    error("no selected visible card")
 end
 
 local c = start()
@@ -108,9 +126,9 @@ reply(query(), 8)
 assert(canvases[1].visible and canvases[1].frame.x < 0)
 assert(down("tab")) -- Autorepeat must not start another query.
 assert(#tasks == 1)
-down("j"); up("j") -- 3 -> 7
-down("h"); up("h") -- 7 -> 6
-down("k"); up("k") -- 6 -> 2
+down("j"); up("j") -- One workspace: down stays in the same row.
+down("h"); up("h") -- 3 -> 2
+down("k"); up("k") -- One workspace: up stays in the same row.
 down("l") -- 2 -> 3; leave held across confirmation.
 assert(up("tab"))
 assert(canvases[1].visible and #tasks == 1) -- Tab release must not commit.
@@ -161,10 +179,93 @@ c.stop()
 c = start()
 reply(query(), 27)
 for _ = 1, 25 do down("l"); up("l") end
-assert(canvases[1].elements[4].text == "3/3")
+local cards = visibleCards()
+assert(cards[24] and cards[27] and not cards[23])
 down("j"); up("j"); up("tab")
 event("flagsChanged", nil, {})
-focusIs(27) -- Incomplete last row and page boundary.
+focusIs(27) -- End of a horizontally scrolled workspace; no row wrapping.
+c.stop()
+
+-- Eight nonempty workspaces, each with six windows; no rows for empty 8 or 9.
+local function manyWorkspaces(task)
+    decoded = {}
+    for _, name in ipairs({ "10", "7", "6", "5", "4", "3", "2", "1" }) do
+        for index = 6, 1, -1 do
+            local id = tonumber(name) * 100 + index
+            decoded[#decoded + 1] = { ["window-id"] = id, ["app-name"] = "App " .. name,
+                ["window-title"] = "Window " .. id, workspace = name }
+        end
+    end
+    task.callback(0, "json", "")
+end
+
+c = start()
+focusedID = 103
+manyWorkspaces(query())
+cards = visibleCards()
+local count = 0
+for _ in pairs(cards) do count = count + 1 end
+assert(count == 24 and cards[101] and cards[604] and not cards[105] and not cards[701])
+assert(selectedID() == 103)
+local otherX, otherY = cards[201].frame.x, cards[201].frame.y
+for _ = 1, 3 do down("l"); up("l") end
+cards = visibleCards()
+assert(selectedID() == 106 and cards[103] and not cards[102])
+assert(cards[201].frame.x == otherX and cards[201].frame.y == otherY and not cards[205])
+down("j"); up("j")
+assert(selectedID() == 201) -- Enter another row at its own remembered selection.
+for _ = 1, 4 do down("l"); up("l") end
+cards = visibleCards()
+assert(selectedID() == 205 and cards[202] and not cards[201])
+assert(cards[103] and cards[106] and not cards[102])
+down("k"); up("k")
+assert(selectedID() == 106)
+for _ = 1, 6 do down("j"); up("j") end
+cards = visibleCards()
+assert(selectedID() == 701 and not cards[103] and cards[202] and cards[704])
+down("j"); up("j")
+cards = visibleCards()
+assert(selectedID() == 1001 and cards[301] and not cards[202] and cards[1004])
+down("j"); up("j") -- Last workspace clamps.
+assert(selectedID() == 1001)
+for _ = 1, 7 do down("k"); up("k") end
+cards = visibleCards()
+assert(selectedID() == 106 and cards[103] and cards[202]) -- Scroll positions survive offscreen.
+down("j"); up("j")
+assert(selectedID() == 205)
+assert(#tasks == 1) -- Selection never changes actual workspace/focus.
+up("tab")
+assert(#tasks == 1)
+event("flagsChanged", nil, {})
+focusIs(205) -- Cross-workspace commit still targets exactly the selected window.
+assert(#tasks == 2)
+c.stop()
+
+c = start()
+focusedID = 1006
+manyWorkspaces(query())
+cards = visibleCards()
+assert(selectedID() == 1006 and cards[1003] and cards[301] and not cards[201])
+down("escape"); up("escape"); up("tab")
+assert(#tasks == 1 and canvases[1].deleted) -- Cancel from another workspace's row.
+c.stop()
+
+-- Unequal row lengths must neither create empty cards nor flatten into a row.
+c = start()
+focusedID = nil
+local mixed = query()
+decoded = {
+    { ["window-id"] = 1, ["app-name"] = "A", ["window-title"] = "One", workspace = "A" },
+    { ["window-id"] = 2, ["app-name"] = "B", ["window-title"] = "Two", workspace = "B" },
+    { ["window-id"] = 3, ["app-name"] = "B", ["window-title"] = "Three", workspace = "B" },
+}
+mixed.callback(0, "json", "")
+down("l"); up("l")
+assert(selectedID() == 1)
+down("j"); up("j"); down("l"); up("l")
+assert(selectedID() == 3)
+down("k"); up("k")
+assert(selectedID() == 1)
 c.stop()
 
 for _, failure in ipairs({ "empty", "invalid", "offline", "timeout", "start" }) do
